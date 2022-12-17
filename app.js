@@ -5,6 +5,7 @@ require('dotenv').config()
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
+const md5 = require('md5');
 
 //Mongoose Setup Files........
 const mongoose = require('mongoose');
@@ -12,7 +13,8 @@ mongoose.set('strictQuery',false);
 const url = process.env.URL;
 mongoose.connect(url, { useNewUrlParser: true });
 
-var encrypt = require('mongoose-encryption');  ///Mongose Encrption code....
+//Mongoose Encryption Technique
+// var encrypt = require('mongoose-encryption');  ///Mongose Encrption code....
 
 
 
@@ -33,7 +35,8 @@ const userSchema = new mongoose.Schema({
 // Add any other plugins or middleware here. For example, middleware for hashing passwords
 const secret = process.env.SECRET
 //Encryptions works......
-userSchema.plugin(encrypt, { secret: secret, encryptedFields : ["password"] });
+
+// userSchema.plugin(encrypt, { secret: secret, encryptedFields : ["password"] });
 
 
 //New Mongoose Model.....
@@ -60,7 +63,7 @@ app.post("/register", (req, res) =>{
 
     const newUser = new User({
         email : req.body.username,
-        password : req.body.password
+        password : md5(req.body.password)
     });
 
     newUser.save(function(err){
@@ -79,7 +82,7 @@ app.post("/register", (req, res) =>{
 app.post("/login", (req, res) =>{
 
     const userName = req.body.username;
-    const Password = req.body.password;
+    const Password = md5(req.body.password);
 
     User.findOne({email : userName }, function(err, foundUser){
         if(err){
