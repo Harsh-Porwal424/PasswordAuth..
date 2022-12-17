@@ -1,15 +1,19 @@
 //jshint esversion:6
 //Basic Header Files........
+require('dotenv').config()
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 
 //Mongoose Setup Files........
 const mongoose = require('mongoose');
-const url = "mongodb+srv://admin:admin@mycluster.qmuj2je.mongodb.net/?retryWrites=true&w=majority";
+mongoose.set('strictQuery',false);
+const url = process.env.URL;
 mongoose.connect(url, { useNewUrlParser: true });
 
 var encrypt = require('mongoose-encryption');  ///Mongose Encrption code....
+
 
 
 const app = express();
@@ -18,6 +22,8 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+
+
 //MogoDB collection Schemaa..........
 const userSchema = new mongoose.Schema({
     email: String,
@@ -25,7 +31,7 @@ const userSchema = new mongoose.Schema({
 });
 
 // Add any other plugins or middleware here. For example, middleware for hashing passwords
-var secret = "Addanyotherpluginsormiddlewarehere";
+const secret = process.env.SECRET
 //Encryptions works......
 userSchema.plugin(encrypt, { secret: secret, encryptedFields : ["password"] });
 
