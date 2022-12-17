@@ -5,7 +5,10 @@ require('dotenv').config()
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
-const md5 = require('md5');
+// const md5 = require('md5');
+const bcrypt = require('bcryptjs');
+const saltRound = 10;
+
 
 //Mongoose Setup Files........
 const mongoose = require('mongoose');
@@ -61,19 +64,28 @@ app.get("/register", (req, res) =>{
 
 app.post("/register", (req, res) =>{
 
-    const newUser = new User({
-        email : req.body.username,
-        password : md5(req.body.password)
-    });
 
-    newUser.save(function(err){
-        if(err){
-            console.log(err);
-        }else{
-            console.log("Sucessfully Saved....");
-            res.render("secrets");
-        }
+    bcrypt.hash(req.body.password, saltRound, function(err, hash) {
+
+
+        const newUser = new User({
+            email : req.body.username,
+            password : hash
+        });
+    
+        newUser.save(function(err){
+            if(err){
+                console.log(err);
+            }else{
+                console.log("Sucessfully Saved....");
+                res.render("secrets");
+            }
+        });
+
     });
+  
+
+    
 
 });
 
@@ -82,16 +94,19 @@ app.post("/register", (req, res) =>{
 app.post("/login", (req, res) =>{
 
     const userName = req.body.username;
-    const Password = md5(req.body.password);
+    const Password = req.body.password;
 
     User.findOne({email : userName }, function(err, foundUser){
         if(err){
             console.log(err);
         }
         if(foundUser){
-            if(foundUser.password === Password){
-                res.render("secrets");
-            }
+
+            bcrypt.compare(Password, foundUser.password, function(err, result) {
+                if(result === true){
+                    res.render("secrets");
+                }
+            });
         }
     });
 
