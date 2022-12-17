@@ -1,27 +1,39 @@
 //jshint esversion:6
-
+//Basic Header Files........
 const express = require("express");
 const bodyParser = require("body-parser");
 const ejs = require("ejs");
 
+//Mongoose Setup Files........
 const mongoose = require('mongoose');
 const url = "mongodb+srv://admin:admin@mycluster.qmuj2je.mongodb.net/?retryWrites=true&w=majority";
 mongoose.connect(url, { useNewUrlParser: true });
 
-const app = express();
+var encrypt = require('mongoose-encryption');  ///Mongose Encrption code....
 
+
+const app = express();
+//Setting & Using Various Engines........
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static("public"));
 
+//MogoDB collection Schemaa..........
 const userSchema = new mongoose.Schema({
     email: String,
     password: String
 });
 
+// Add any other plugins or middleware here. For example, middleware for hashing passwords
+var secret = "Addanyotherpluginsormiddlewarehere";
+//Encryptions works......
+userSchema.plugin(encrypt, { secret: secret, encryptedFields : ["password"] });
+
+
+//New Mongoose Model.....
 const User = new mongoose.model("User", userSchema);
 
-
+//Severals Get Requests..........
 app.get("/", (req, res) =>{
     res.render("home");
 });
@@ -75,6 +87,9 @@ app.post("/login", (req, res) =>{
     });
 
 });
+
+
+
 
 
 app.listen(3000, function () {
